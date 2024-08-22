@@ -7,8 +7,6 @@ $query = sendGetNew('https://api.moysklad.ru/api/remap/1.2/entity/customerorder?
 $orderhref = $query->rows[0]->meta->href;
 $order = sendGetNew($orderhref);
 
-//file_get_contents("http://api.telegram.org/bot6323581019:AAEXKQ52C4MRB0WyPcuJkRsNElQ9D3LSbPE/sendMessage?chat_id=2565367&parse_mode=HTML&text=".json_encode($update,JSON_PRETTY_PRINT+JSON_UNESCAPED_UNICODE));
-
 if($update['status']=="completed") {
 
 	$postdata = array(

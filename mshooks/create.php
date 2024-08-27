@@ -1,10 +1,10 @@
-<?//require_once($_SERVER['DOCUMENT_ROOT'] . "/bitrix/modules/main/include/prolog_before.php");
+<?require_once($_SERVER['DOCUMENT_ROOT'] . "/bitrix/modules/main/include/prolog_before.php");
 $inputData = file_get_contents('php://input');
 $update = json_decode($inputData,true);
 
 file_put_contents("create.log.txt",date("d.m.Y H:i").PHP_EOL.$inputData, FILE_APPEND);
 
-$order = sendGetNewAPI($update['events'][0]['meta']['href']);
+$order = sendGetNew($update['events'][0]['meta']['href']);
 
 foreach($order->attributes as $a=>$attr) {
 	if($attr->id=="87c70bc5-9a5b-11e7-7a6c-d2a900000c9d") {
@@ -14,7 +14,7 @@ foreach($order->attributes as $a=>$attr) {
 
 sleep(1);
 
-$positions = sendGetNewAPI($order->positions->meta->href)->rows;
+$positions = sendGetNew($order->positions->meta->href)->rows;
 
 foreach($positions as $p=>$pos) {
 	if($pos->assortment->meta->type=="service") {
@@ -87,116 +87,4 @@ foreach($positions as $p=>$pos) {
 		sendPost($order->positions->meta->href,$fields); //создаем новую
 	}
 }
-
-//} // END ONLY JEKA
-
-function sendGet($url) {
-    $username = MS_LOGIN;
-    $password = MS_PASS;
-    $authCode = base64_encode($username . ':' . $password);
-    $opts = array(
-        'http' => array(
-        'method' => 'GET',
-        'header' => 'Auth:'.PHP_EOL.'Authorization: Basic ' . $authCode,
-        )
-    );
-    $context = stream_context_create($opts);
-    return json_decode(file_get_contents($url,false,$context));
-}
-
-function sendGetNewAPI($url) {
-
-    $username = MS_LOGIN;
-    $password = MS_PASS;
-    $authCode = base64_encode($username . ':' . $password);
-
-	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	curl_setopt($ch, CURLOPT_HEADER, false);
-	curl_setopt($ch, CURLOPT_ACCEPT_ENCODING, "gzip");
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Basic '.$authCode,'Content-Type: application/json'));
-	$html = curl_exec($ch);
-	curl_close($ch);
-	return json_decode($html);
-
-}
-
-function sendPut($url,$postdata) {
-    $username = MS_LOGIN;
-    $password = MS_PASS;
-    $authCode = base64_encode($username . ':' . $password);
-	$curl = curl_init();
-	curl_setopt_array($curl, array(
-		CURLOPT_URL => $url,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_ENCODING => '',
-		CURLOPT_MAXREDIRS => 10,
-	  	CURLOPT_TIMEOUT => 0,
-	  	CURLOPT_FOLLOWLOCATION => true,
-		CURLOPT_ACCEPT_ENCODING => "gzip",
-	  	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	  	CURLOPT_CUSTOMREQUEST => 'PUT',
-	  	CURLOPT_POSTFIELDS =>json_encode($postdata),
-		CURLOPT_HTTPHEADER => array(
-			'Authorization: Basic '.$authCode,
-			'Content-Type: application/json'
-		),
-	));
-	$response = curl_exec($curl);
-	curl_close($curl);
-	return $response;
-}
-
-function sendPost($url,$postdata) {
-    $username = MS_LOGIN;
-    $password = MS_PASS;
-    $authCode = base64_encode($username . ':' . $password);
-	$curl = curl_init();
-	curl_setopt_array($curl, array(
-		CURLOPT_URL => $url,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_ENCODING => '',
-		CURLOPT_MAXREDIRS => 10,
-	  	CURLOPT_TIMEOUT => 0,
-	  	CURLOPT_FOLLOWLOCATION => true,
-		CURLOPT_ACCEPT_ENCODING => "gzip",
-	  	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	  	CURLOPT_CUSTOMREQUEST => 'POST',
-	  	CURLOPT_POSTFIELDS =>json_encode($postdata),
-		CURLOPT_HTTPHEADER => array(
-			'Authorization: Basic '.$authCode,
-			'Content-Type: application/json'
-		),
-	));
-	$response = curl_exec($curl);
-	curl_close($curl);
-	return $response;
-}
-
-function sendDelete($url) {
-    $username = MS_LOGIN;
-    $password = MS_PASS;
-    $authCode = base64_encode($username . ':' . $password);
-	$curl = curl_init();
-	curl_setopt_array($curl, array(
-		CURLOPT_URL => $url,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_ENCODING => '',
-		CURLOPT_MAXREDIRS => 10,
-	  	CURLOPT_TIMEOUT => 0,
-	  	CURLOPT_FOLLOWLOCATION => true,
-		CURLOPT_ACCEPT_ENCODING => "gzip",
-	  	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-	  	CURLOPT_CUSTOMREQUEST => 'DELETE',
-		CURLOPT_HTTPHEADER => array(
-			'Authorization: Basic '.$authCode,
-			'Content-Type: application/json'
-		),
-	));
-	$response = curl_exec($curl);
-	curl_close($curl);
-	return $response;
-}
-
 ?>
